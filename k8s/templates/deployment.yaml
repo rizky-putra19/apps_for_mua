@@ -1,0 +1,253 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${DEPLOYMENT_NAME}
+spec:
+  replicas: ${MIN_REPLICAS}
+  selector:
+    matchLabels:
+      app: ${DEPLOYMENT_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${DEPLOYMENT_NAME}
+    spec:
+      serviceAccountName: cloudsql-ksa
+      containers:
+        - name: cloud-sql-proxy
+          # It is recommended to use the latest version of the Cloud SQL proxy
+          # Make sure to update on a regular schedule!
+          image: gcr.io/cloudsql-docker/gce-proxy:1.27.1
+          resources:
+            requests:
+              memory: ${SQL_PROXY_MEMORY_REQUEST}
+              cpu: ${SQL_PROXY_CPU_REQUEST}
+            limits:
+              memory: ${SQL_PROXY_MEMORY_LIMIT}
+              cpu: ${SQL_PROXY_CPU_LIMIT}
+          command:
+            - '/cloud_sql_proxy'
+
+            # If connecting from a VPC-native GKE cluster, you can use the
+            # following flag to have the proxy connect over private IP
+            # - "-ip_address_types=PRIVATE"
+
+            # Replace DB_PORT with the port the proxy should listen on
+            # Defaults: MySQL: 3306, Postgres: 5432, SQLServer: 1433
+            - '-instances=${INSTANCE_CONNECTION_NAME}=tcp:3306'
+          securityContext:
+            # The default Cloud SQL proxy image runs as the
+            # "nonroot" user and group (uid: 65532) by default.
+            runAsNonRoot: true
+        - name: ${DEPLOYMENT_NAME}
+          image: asia.gcr.io/${PROJECT_ID}/${IMAGE}:${TAG}
+          resources:
+            requests:
+              memory: ${MEMORY_REQUEST}
+              cpu: ${CPU_REQUEST}
+            limits:
+              memory: ${MEMORY_LIMIT}
+              cpu: ${CPU_LIMIT}
+          ports:
+            - containerPort: 3001
+              name: server
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 20
+            timeoutSeconds: 10
+            periodSeconds: 10
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 20
+            timeoutSeconds: 10
+            periodSeconds: 10
+            failureThreshold: 10
+          env:
+            - name: STAGE
+              valueFrom:
+                configMapKeyRef:
+                  key: STAGE
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_HOST
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PORT
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USERNAME
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_NAME
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: LEGACY_API_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: LEGACY_API_BASE_URL
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: CHALLENGER_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: CHALLENGER_BASE_URL
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: APP_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: APP_URL
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: MAILGUN_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  key: MAILGUN_DOMAIN
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: CUSTOMER_ANDROID_PACKAGE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: CUSTOMER_ANDROID_PACKAGE_NAME
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: ARTISAN_ANDROID_PACKAGE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: ARTISAN_ANDROID_PACKAGE_NAME
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: CUSTOMER_IOS_PACKAGE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: CUSTOMER_IOS_PACKAGE_NAME
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: ARTISAN_IOS_PACKAGE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: ARTISAN_IOS_PACKAGE_NAME
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: ARTISAN_FIREBASE_DYNAMIC_LINK_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  key: ARTISAN_FIREBASE_DYNAMIC_LINK_PREFIX
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: CUSTOMER_FIREBASE_DYNAMIC_LINK_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  key: CUSTOMER_FIREBASE_DYNAMIC_LINK_PREFIX
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: REDIS_HOST
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: REDIS_PORT
+                  name: ${DEPLOYMENT_NAME}-config
+
+            - name: OTP_MAX_RETRY
+              valueFrom:
+                configMapKeyRef:
+                  key: OTP_MAX_RETRY
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: OTP_MAX_VALIDATION_ATTEMPT
+              valueFrom:
+                configMapKeyRef:
+                  key: OTP_MAX_VALIDATION_ATTEMPT
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: OTP_STEP_REQUEST_TIME
+              valueFrom:
+                configMapKeyRef:
+                  key: OTP_STEP_REQUEST_TIME
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: OTP_VALIDITY
+              valueFrom:
+                configMapKeyRef:
+                  key: OTP_VALIDITY
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: PLATFORM_FEE
+              valueFrom:
+                configMapKeyRef:
+                  key: PLATFORM_FEE
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: MEDIA_BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: MEDIA_BUCKET_NAME
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: APPSPOT_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: APPSPOT_URL
+                  name: ${DEPLOYMENT_NAME}-config
+            - name: ADMIN_TOKEN_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: ACCESS_TOKEN_ADMIN_SECRET
+                  name: beautybell-api-config
+            - name: CUSTOMER_TOKEN_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: ACCESS_TOKEN_CUSTOMER_SECRET
+                  name: beautybell-api-config
+            - name: ARTISAN_TOKEN_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: ACCESS_TOKEN_ARTISAN_SECRET
+                  name: beautybell-api-config
+            #secrets =================================================================
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: DB_PASSWORD
+                  name: ${DEPLOYMENT_NAME}-secrets
+            - name: LEGACY_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: LEGACY_JWT_SECRET
+                  name: ${DEPLOYMENT_NAME}-secrets
+            - name: MAILGUN_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: MAILGUN_SECRET_KEY
+                  name: ${DEPLOYMENT_NAME}-secrets
+            - name: FIREBASE_WEB_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: FIREBASE_WEB_API_KEY
+                  name: ${DEPLOYMENT_NAME}-secrets
+            - name: JWT_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: JWT_PRIVATE_KEY
+                  name: jwt-key-secret
+            - name: JWT_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: JWT_PUBLIC_KEY
+                  name: jwt-key-secret
+
+            - name: XENDIT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: XENDIT_SECRET_KEY
+                  name: ${DEPLOYMENT_NAME}-secrets
+            - name: XENDIT_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: XENDIT_PUBLIC_KEY
+                  name: ${DEPLOYMENT_NAME}-secrets
+            - name: XENDIT_CALLBACK_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: XENDIT_CALLBACK_TOKEN
+                  name: ${DEPLOYMENT_NAME}-secrets

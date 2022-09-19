@@ -1,0 +1,16 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    command: --max_allowed_packet=32505856 # Set max_allowed_packet to 256M (or any other value)
+    environment:
+      - MYSQL_ROOT_PASSWORD=t00r
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 13308:3306
+  redis:
+    image: redis:alpine
+    ports:
+      - '63790:6379'

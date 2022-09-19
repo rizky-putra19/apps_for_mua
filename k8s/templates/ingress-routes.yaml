@@ -1,0 +1,69 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ${DEPLOYMENT_NAME}
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`${DOMAIN}`) && (PathPrefix(`/api/v1/`) || PathPrefix(`/api/accounts`) || PathPrefix(`/api/challenges`))
+      middlewares:
+        - name: https-redirect
+      services:
+        - name: ${DEPLOYMENT_NAME}
+          port: 3001
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ${DEPLOYMENT_NAME}-secure
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`${DOMAIN}`) && (PathPrefix(`/api/v1/`) || PathPrefix(`/api/accounts`) || PathPrefix(`/api/challenges`))
+      middlewares:
+        - name: auth
+      services:
+        - name: ${DEPLOYMENT_NAME}
+          port: 3001
+  tls:
+    certResolver: default
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ${DEPLOYMENT_NAME}-app
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`${APP_DOMAIN}`) && (PathPrefix("/auth") || PathPrefix(`/docs`))
+      middlewares:
+        - name: https-redirect
+      services:
+        - name: ${DEPLOYMENT_NAME}
+          port: 3001
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ${DEPLOYMENT_NAME}-app-secure
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`${APP_DOMAIN}`) && (PathPrefix(`/auth`) || PathPrefix(`/docs`))
+      services:
+        - name: ${DEPLOYMENT_NAME}
+          port: 3001
+  tls:
+    certResolver: default

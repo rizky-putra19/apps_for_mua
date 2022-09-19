@@ -1,0 +1,68 @@
+version: '3.3'
+services:
+  api-v2:
+    image: asia.gcr.io/beautybellid/beautybell-v2:1.0.82-dev
+    ports:
+      - '3001:3001'
+    networks:
+      - traefik-public
+    environment:
+      API_URL: https://api.stg.beautybell.id
+      APP_URL: https://app.stg.beautybell.id
+      APPSPOT_URL: https://beautybellid.appspot.com
+      ARTISAN_ANDROID_PACKAGE_NAME: com.solveway.bellamitra
+      ARTISAN_FIREBASE_DYNAMIC_LINK_PREFIX: https://artisan.beautybell.id
+      ARTISAN_IOS_PACKAGE_NAME: com.adrenadev.ios.BeautyBellArtisan
+      CHALLENGER_BASE_URL: http://challenger.default.svc.cluster.local:9000
+      CUSTOMER_ANDROID_PACKAGE_NAME: com.solveway.bella
+      CUSTOMER_FIREBASE_DYNAMIC_LINK_PREFIX: https://customer.beautybell.id
+      CUSTOMER_IOS_PACKAGE_NAME: com.adrenadev.ios.BeautyBell
+      DB_HOST: mysql_mysql
+      DB_NAME: beautybell
+      DB_PORT: '3306'
+      DB_USERNAME: techstg
+      LEGACY_API_BASE_URL: http://beautybell-api.default.svc.cluster.local:8000
+      MAILGUN_DOMAIN: mg.beautybell.id
+      MEDIA_BUCKET_NAME: media-stg
+      OTP_MAX_RETRY: '5'
+      OTP_MAX_VALIDATION_ATTEMPT: '3'
+      OTP_STEP_REQUEST_TIME: '300'
+      OTP_VALIDITY: '86400'
+      PLATFORM_FEE: '0'
+      REDIS_HOST: redis-master.default.svc.cluster.local
+      REDIS_PORT: '6379'
+      STAGE: stg
+      DB_PASSWORD: HNsya8eyCsfQBNqX
+      JWT_PRIVATE_KEY: -----BEGIN PRIVATE KEY-----\\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDHTt+xlVve0c7m\\nTCRT0NpoeGFH63Cs/FI4CXt2qVDGV/hZloFtTxakIy2TyePHD7y+iCYsJ9wBeV/I\\nSzLfokAxaeKaDets3stzshB4aXPsLmG7nNISdvrO3c4HC3ICds1VyRiAmB1tVUDq\\nQRRVGfTLsb4FBXeLwHplZFDsJ8TmMv/QubfGRol0+0NcDEZHSspN2y2pP4sjOyWj\\nOaYTTmMFOk7O3bSuRe6Xu+f8N+rNh3m9m0PztT7+gs2x/0rEh6pqaCyQx1Rf1ecm\\nDhIi40YCRWWG/VBZGDBwMOL1pSGLtDV6Ce99Ov+QNW2k3cc1WIEr8dToVzJ465F0\\nxnCAgadnAgMBAAECggEAZjN11ZQnRf0EQWeuASTJumRwTfbXEn1Yk8+Y9eIgv3SA\\nrz/UIn85tvUq++u812ikendKS74svLzGdujIr5B9plkLj7+vh2Y/oZYfh/9bKDMo\\nfpINztYgClAGw+oEjmrpJCI4ZEicXmInJXg1uuXSd1kvfVeuU4VhvfhQ3qgN+ZQp\\nWo+njkz3YA9ByC6dJLklGUENyAMLyWgjb8NNLV7lEm8ATcUeQVxjMLDcJ23UdPr3\\nIBDYdu4hyQXxUmiqnibPyc9aGdHySS/Cbg994/yPAUpx4xSq0uy7URxMP2gZGsRn\\nOcDXEY+aBDBB5NDW8xe5xSze9LLotSK5+oxu9x14sQKBgQDs0dGPT/XqhfHK4qWm\\nt0Bo7BvzrQJJAsvFK3CGh4YTjHq7iBs9FW+fHnCBAfBDOW0rO+1EP9jhJPcYcxOy\\nn6AZ3n45lxEedt3g5NnzWQG4ZgKGzsko/Lfm3uSeT3oZG8EPSPlQs2qx7rWgaF5W\\n+7e5DYqJHcgCRP1Q06n00gfuCwKBgQDXc0wlnQ30C8Qe0X0hjlEW0R3MwTn0KfFI\\nTiwVxmhay/K65dJEHPAtCJ0DADyvnduY2Orryqni6CDIk6jXHveT1Sgn5OpE4LX/\\nSyM9ZoM1SsV5UQaKLjtHX/f9r1o2iG/R//IRLCcl6fD8E7Efas19r+V9Wu5G24Yr\\nzuAMUHwxlQKBgQCDY0VoxWwiWX30mhpdjH3nuFcpsmr6Jtr24Urk2HvCjMXrFXBH\\nS4VKOpEggfrS0SGIQw84NlQVVXTh07ax+23P7GkLeoy84iXniBCDunYB4Fa2hDOG\\n0e8V38PnMSEEnSlXWZ048NHZNh7+h+kPSUh9Gs4plKRK3gvMtCIu+ff8UQKBgQCQ\\nF72KvnJRkPj2v5bXtW4IO42ZnnWbFd4YRKf5XDv41cQeOYyaH1yGUedo1WTA82ul\\n2xWq410hs6wRWagnT7+3MG1t2QzRShSOjHsiGoiQQNS3oXglPGxK/SVHllpYdIGM\\nyofj8kqwcbjJboYcg/qxH831O7Z2z2T5sZ9ovP+CzQKBgQCYvXr/nAG2y5hRq+fS\\nZIoQFVDk/4vT9n3YlKDo9nIYntWok4vZbBWwzQklHEnNlF20WxEsocRWVQ75qnqV\\nx8J1LYQri6L3iVnWEqYkeZ1fehsmZSHTXY7n/cXL4xNZMl3wiylubWbjDBNqd5gP\\n4G0zJYCBGjVlztsecyM22uEmjg==\\n-----END PRIVATE KEY-----
+      JWT_PUBLIC_KEY: -----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx07fsZVb3tHO5kwkU9Da\\naHhhR+twrPxSOAl7dqlQxlf4WZaBbU8WpCMtk8njxw+8vogmLCfcAXlfyEsy36JA\\nMWnimg3rbN7Lc7IQeGlz7C5hu5zSEnb6zt3OBwtyAnbNVckYgJgdbVVA6kEUVRn0\\ny7G+BQV3i8B6ZWRQ7CfE5jL/0Lm3xkaJdPtDXAxGR0rKTdstqT+LIzslozmmE05j\\nBTpOzt20rkXul7vn/DfqzYd5vZtD87U+/oLNsf9KxIeqamgskMdUX9XnJg4SIuNG\\nAkVlhv1QWRgwcDDi9aUhi7Q1egnvfTr/kDVtpN3HNViBK/HU6FcyeOuRdMZwgIGn\\nZwIDAQAB\\n-----END PUBLIC KEY-----
+    deploy:
+      labels:
+        # traefik.enable=true and constraint label are needed because
+        # of the restrictions we enforced in our traefik configuration
+        - traefik.enable=true
+        - traefik.constraint-label=traefik-public
+        - traefik.docker.network=traefik-public
+        # API
+        - traefik.http.routers.api-v2.rule=Host(`api-v2.stg.beautybell.id`)
+        - traefik.http.routers.api-v2.entrypoints=http
+        - traefik.http.routers.api-v2.middlewares=https-redirect
+        - traefik.http.services.api-v2.loadbalancer.server.port=3001
+        # API SECURE
+        - traefik.http.routers.api-v2-secure.middlewares=auth
+        - traefik.http.routers.api-v2-secure.rule=Host(`api-v2.stg.beautybell.id`) && (PathPrefix(`/api/v1/`) || PathPrefix(`/api/accounts`) || PathPrefix(`/api/challenges`))
+        - traefik.http.routers.api-v2-secure.entrypoints=https
+        - traefik.http.routers.api-v2-secure.tls=true
+        - traefik.http.routers.api-v2-secure.tls.certresolver=le
+        # APP
+        - traefik.http.routers.app-v2.rule=Host(`app-v2.stg.beautybell.id`)
+        - traefik.http.routers.app-v2.entrypoints=http
+        - traefik.http.routers.app-v2.middlewares=https-redirect
+        # APP SECURE
+        - traefik.http.routers.app-v2-secure.middlewares=auth
+        - traefik.http.routers.app-v2-secure.rule=Host(`app-v2.stg.beautybell.id`)  && (PathPrefix("/auth") || PathPrefix(`/docs`))
+        - traefik.http.routers.app-v2-secure.entrypoints=https
+        - traefik.http.routers.app-v2-secure.tls=true
+        - traefik.http.routers.app-v2-secure.tls.certresolver=le
+networks:
+  traefik-public:
+    external: true

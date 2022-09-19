@@ -1,0 +1,105 @@
+name: Publish Staging
+
+on:
+  release:
+    types: [published]
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: cluster-beautybell-stg
+  GKE_ZONE: asia-southeast2-a
+  DEPLOYMENT_NAME: beautybell-v2
+  IMAGE: beautybell-v2
+  CPU_LIMIT: 500m
+  LEGACY_API_BASE_URL: http://beautybell-api.default.svc.cluster.local:8000
+  CHALLENGER_BASE_URL: http://challenger.default.svc.cluster.local:9000
+  LEGACY_JWT_SECRET: ${{ secrets.LEGACY_JWT_SECRET }}
+  DB_HOST: localhost
+  DB_PORT: '3306'
+  DB_USERNAME: root
+  DB_NAME: beautybell_v2
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  MEMORY_LIMIT: 512Mi
+  CPU_REQUEST: 300m
+  MEMORY_REQUEST: 400Mi
+  SQL_PROXY_CPU_LIMIT: 200m
+  SQL_PROXY_MEMORY_LIMIT: 256Mi
+  SQL_PROXY_CPU_REQUEST: 100m
+  SQL_PROXY_MEMORY_REQUEST: 256Mi
+  STAGE: stg
+  INSTANCE_CONNECTION_NAME: beautybellid:asia-southeast2:beautybell-stg
+  MIN_REPLICAS: 1
+  MAILGUN_DOMAIN: mg.beautybell.id
+  MAILGUN_SECRET_KEY: ${{ secrets.MAILGUN_SECRET_KEY }}
+  FIREBASE_WEB_API_KEY_BASE64: ${{ secrets.FIREBASE_WEB_API_KEY_BASE64 }}
+  MAILGUN_SECRET_KEY_BASE64: ${{ secrets.MAILGUN_SECRET_KEY_BASE64 }}
+  FIREBASE_WEB_API_KEY: ${{ secrets.FIREBASE_WEB_API_KEY }}
+  CUSTOMER_FIREBASE_DYNAMIC_LINK_PREFIX: https://customer.beautybell.id
+  ARTISAN_FIREBASE_DYNAMIC_LINK_PREFIX: https://artisan.beautybell.id
+  ARTISAN_ANDROID_PACKAGE_NAME: com.solveway.bellamitra
+  CUSTOMER_ANDROID_PACKAGE_NAME: com.solveway.bella
+  ARTISAN_IOS_PACKAGE_NAME: com.adrenadev.ios.BeautyBellArtisan
+  CUSTOMER_IOS_PACKAGE_NAME: com.adrenadev.ios.BeautyBell
+  DOMAIN: api.stg.beautybell.id
+  APP_DOMAIN: app.stg.beautybell.id
+  API_URL: https://api.stg.beautybell.id
+  APP_URL: https://app.stg.beautybell.id
+  REDIS_HOST: redis-master.default.svc.cluster.local
+  REDIS_PORT: '6379'
+  OTP_MAX_RETRY: '5'
+  OTP_MAX_VALIDATION_ATTEMPT: '3'
+  OTP_STEP_REQUEST_TIME: '300'
+  OTP_VALIDITY: '86400'
+  MEDIA_BUCKET_NAME: media-stg
+  APPSPOT_URL: https://beautybellid.appspot.com
+  PLATFORM_FEE: '0'
+  JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY_STG }}
+  JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY_STG }}
+  XENDIT_SECRET_KEY: ${{ secrets.XENDIT_SECRET_KEY_STG }}
+  XENDIT_PUBLIC_KEY: ${{ secrets.XENDIT_PUBLIC_KEY_STG }}
+  XENDIT_CALLBACK_TOKEN: ${{ secrets.XENDIT_CALLBACK_TOKEN_STG }}
+
+jobs:
+  deploy-staging:
+    name: Setup, Build, Publish, and Deploy
+    if: 'github.event.release.prerelease'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GKE_PROJECT_SA }}
+      - uses: google-github-actions/setup-gcloud@v0
+      - run: |-
+          gcloud --quiet auth configure-docker
+      # - run: |-
+      #     gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/
+      - name: Build
+        run: |-
+          export TAG=$(echo "${GITHUB_REF}" | cut -d "/" -f3)
+          docker build \
+          --tag "asia.gcr.io/$PROJECT_ID/$IMAGE:$TAG" .
+      - name: Publish
+        run: |-
+          docker push "asia.gcr.io/$PROJECT_ID/$IMAGE:$(echo "${GITHUB_REF}" | cut -d "/" -f3)"
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.STG_SERVER_HOST }}
+          envs: PROJECT_ID,IMAGE,GITHUB_REF
+          username: ${{ secrets.STG_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker service update --image asia.gcr.io/$PROJECT_ID/$IMAGE:$(echo "${GITHUB_REF}" | cut -d "/" -f3) api-v2_api-v2 --with-registry-auth
+      # - name: Deploy
+      #   run: |-
+      #     export TAG=$(echo "${GITHUB_REF}" | cut -d "/" -f3)
+      #     for f in $(find k8s/templates -regex '.*\.ya*ml'); do envsubst < $f | sed -e 's/§/$/g' > "./k8s/generated/$(basename $f)"; done
+      #     kubectl apply -f k8s/generated
+      #     kubectl rollout status deployment/${DEPLOYMENT_NAME}
+      # - uses: actions/upload-artifact@v2
+      #   with:
+      #     path: k8s/generated/

@@ -1,0 +1,19 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
+import { IsNotEmpty, IsOptional, Length } from 'class-validator';
+export class CreateCategoryRequest {
+    @ApiProperty({
+        description: 'category name',
+        required: true
+    })
+    @IsNotEmpty()
+    @Length(3, 50)
+    readonly name: string;
+    
+    @ApiProperty({
+        description: 'category parent id'
+    })
+    @Expose({ name: 'parent_id' })
+    @IsOptional()
+    parentId?: number;
+}

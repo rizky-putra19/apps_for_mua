@@ -1,0 +1,17 @@
+name-template: $NEXT_PATCH_VERSION
+tag-template: $NEXT_PATCH_VERSION
+filter-by-commitish: true
+commitish: develop
+categories:
+  - title: Major Changes
+    label: "changes: major"
+
+  - title: Minor Changes
+    label: "changes: minor"
+
+  - title: Patch Changes
+    label: "changes: patch"
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+template: |
+  ## Non-version Changes
+  $CHANGES
